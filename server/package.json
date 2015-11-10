@@ -1,0 +1,13 @@
+{
+  "name": "rhymaServer",
+  "version": "0.0.1",
+  "description": "rhyma server",
+  "dependencies": {
+  	"express": "~4.11.2",
+  	"serve-favicon": "~2.2.0",
+  	"http": "~0.0.0",
+  	"socket.io": "~1.3.3",
+  	"cmudict": "~1.0.2",
+  	"levenshtein": "~1.0.5"
+  }
+}
