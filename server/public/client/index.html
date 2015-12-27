@@ -5,6 +5,7 @@
     <title>r h y m a</title>
     <meta name="description" content=""/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="client/styles.css">
   </head>
 
@@ -16,7 +17,7 @@
   <script src="client/modules/utils/stats.min.js"></script>
   <script src="client/modules/utils/OrbitControls.js"></script>
   <script src="client/modules/core/worldManager.js"></script>
-  <script src="client/modules/core/serverWebSocket.js"></script>
+  <script src="client/modules/core/socketManager.js"></script>
   <script src="client/modules/core/rhymeManager.js"></script>
   <script src="client/modules/core/rhymePlot.js"></script>
   <script src="client/modules/core/brain.js"></script>
@@ -34,6 +35,18 @@
 
       <div id="worldContainer">
 
+      </div>
+
+      <div id="rhymeInfoPanel">
+        <div id="rowWord">
+          <div id="rowWordText"></div>
+        </div>
+        <div id="columnWord">
+          <div id="columnWordText"></div>
+        </div>
+        <div id="rhymeScore">
+          <div id="rhymeScoreText">
+        </div>
       </div>
 
     </div>

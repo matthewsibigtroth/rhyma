@@ -10,6 +10,7 @@ body {
     margin: 0;
 }
 
+
 #mainContainer {
 	width: 100%;
 	height: 100%;
@@ -20,5 +21,43 @@ body {
 #worldContainer {
     width: 100%;
     height: 100%;
+}
+
+#rhymeInfoPanel {
+    position: fixed;
+    width: 100%;
+    height: 15%;
+    bottom: 0;
+    background-color: rgb(48, 63, 159);
+}
+
+#rowWord {
+    float: left;
+    width: 33.3%;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    color: rgb(250, 250, 250);
+    text-align: center;
+    padding-top: 2%;
+}
+
+#columnWord {
+    float: left;
+    width: 33.3%;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    color: rgb(250, 250, 250);
+    text-align: center;
+    padding-top: 2%;
+}
+
+#rhymeScore {
+    float: left;
+    width: 33.3%;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    color: rgb(250, 250, 250);
+    text-align: center;
+    padding-top: 2%;
 }
 

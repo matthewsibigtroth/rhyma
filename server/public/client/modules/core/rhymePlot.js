@@ -2,36 +2,60 @@
 function RhymePlot(brain, scene) {
 
 	var self = this;
-	var rhymePoints;
+	var rhymePoints = null;
 	var SPACE_BETWEEN_RHYME_POINTS = 2;
-	var PLOT_X_OFFSET = 0//-2;
-	var PLOT_Y_OFFSET = 0//-2;
 	var raycaster;
 	var mouse;
 	var particleSystem;
+	var particlesBufferGeometry;
+	var rowWordText;
+	var columnWordText;
+	var rhymeScoreText;
 
 
 	self.init = function() {
-		self.createRhymePoints();
-		self.createRaycaster();
-		self.listenForRhymePointTouches();
+		rowWordText = document.querySelector("#rowWordText");
+		columnWordText = document.querySelector("#columnWordText");
+		rhymeScoreText = document.querySelector("#rhymeScoreText");
 	};
 
-	self.createRhymePoints = function() {
+	self.initRhymeMap = function(rhymeMap) {
+		self.createRhymePoints(rhymeMap);
+		self.createRaycaster();
+		self.listenForRhymePointTouches();	
+	};
+
+	self.createRhymePoints = function(rhymeMap) {
 		// Build the particles array and rhymePoint objects
 		rhymePoints = [];
 		var particles = new THREE.Geometry();
-		var wordList = brain.getRhymeManager().getWordList();
-		for (var row=0; row<wordList.length; row++) {
+		var words = Object.keys(rhymeMap);
+		var offsetX = (words.length * SPACE_BETWEEN_RHYME_POINTS) / 2;
+		var scoreScaleFactor = 3;
+
+		for (var row=0; row<words.length; row++) {
 			rhymePoints[row] = [];
-			for (var column=0; column<wordList.length; column++) {
-				var word = wordList[column];
-				var x = (column * SPACE_BETWEEN_RHYME_POINTS) + PLOT_X_OFFSET;
-				var y = Math.random()* 10;
-				var z = (row * SPACE_BETWEEN_RHYME_POINTS) + PLOT_Y_OFFSET;
+			var rhymeScores = words[row];
+			for (var column=0; column<words.length; column++) {
+				var rowWord = words[row];
+				var columnWord = words[column];
+				var rhymeScore = rhymeMap[rowWord][column];
+				
+				var x = (column * SPACE_BETWEEN_RHYME_POINTS) - offsetX;
+				var y = -rhymeScore * scoreScaleFactor;
+				var z = -(row * SPACE_BETWEEN_RHYME_POINTS);
 				var position = new THREE.Vector3(x, y, z);
 				particles.vertices.push(position);
-				var rhymePoint = new RhymePoint(self, word, position, row, column, particles.vertices.length-1);
+				var rhymePoint = new RhymePoint(
+					self,
+					rowWord,
+					columnWord,
+					rhymeScore,
+					position,
+					row, 
+					column, 
+					particles.vertices.length-1
+					);
 				rhymePoints[row].push(rhymePoint);
 			}
 		}
@@ -50,13 +74,30 @@ function RhymePlot(brain, scene) {
 			color.toArray( colors, i * 3 );
 			sizes[ i ] = 5 * 0.5;
 		}
-		var geometry = new THREE.BufferGeometry();
-		geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-		geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
-		geometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
+		particlesBufferGeometry = new THREE.BufferGeometry();
+		particlesBufferGeometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+		particlesBufferGeometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
+		particlesBufferGeometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
+
+		/*
+		// Create the material
+		//var particleImagePath = 'client/images/particle_a.png';
+		var particleImagePath = 'client/images/dot_1.png';
+		//var particleImagePath = 'client/images/particle.png';
+		var texture = THREE.ImageUtils.loadTexture(particleImagePath);
+		texture.minFilter = THREE.LinearFilter;
+		var material = new THREE.PointsMaterial({
+			color: 0xFFFFFF,
+		   	size: 3,
+		    map: texture,
+  			blending: THREE.AdditiveBlending,
+  			transparent: true
+		});
+		*/
 
 		// Create the material
-		var texture = THREE.ImageUtils.loadTexture("client/images/particle_a.png");
+		var particleImagePath = 'client/images/dot_1.png';
+		var texture = THREE.ImageUtils.loadTexture(particleImagePath);
 		texture.minFilter = THREE.LinearFilter;
 		var material = new THREE.PointsMaterial({
 			color: 0xFFFFFF,
@@ -66,23 +107,23 @@ function RhymePlot(brain, scene) {
   			transparent: true
 		});
 
+
 		// Create the system of particles
-		particleSystem = new THREE.Points(geometry, material);
+		particleSystem = new THREE.Points(particlesBufferGeometry, material);
 		particleSystem.sortParticles = true;
 		scene.add(particleSystem);
-	}
+	};
 
 	self.createRaycaster = function() {
 		raycaster = new THREE.Raycaster();
-	}
-
+	};
 
 	self.listenForRhymePointTouches = function() {
 		mouse = new THREE.Vector2();
 		document.addEventListener('mousedown', self.onDocumentMouseDown, false);
 		//$("#sceneContainer").click(self.onDocumentMouseDown);
 		//document.addEventListener( 'touchstart', self.onDocumentTouchStart, false );
-	}
+	};
 
 
 
@@ -93,7 +134,7 @@ function RhymePlot(brain, scene) {
 		event.clientX = event.touches[0].clientX;
 		event.clientY = event.touches[0].clientY;
 		self.onDocumentMouseDown(event);
-	}	
+	};
 			
 	self.onDocumentMouseDown = function(event) {
 		event.preventDefault();
@@ -113,10 +154,34 @@ function RhymePlot(brain, scene) {
 
 			var rhymePoint = self.findRhymePointWithGivenIndex(intersects[0].index);
 			if (rhymePoint != null) {
-				console.log(rhymePoint.getRow(), rhymePoint.getColumn());
+				console.log(
+					rhymePoint.getRow(),
+					rhymePoint.getColumn(),
+					rhymePoint.getWords(),
+					rhymePoint.getRhymeScore());
+
+				self.updateRhymeInfoPanel(rhymePoint);
 			}
 		}
-	}
+	};
+
+	self.updateRhymeInfoPanel = function(rhymePoint) {
+		TweenLite.to(rowWordText, .6, {y: 100, opacity: 0, ease: Quint.easeOut, onComplete: function() {
+			rowWordText.textContent = rhymePoint.getWords()[0];
+			TweenLite.to(rowWordText, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
+		}});
+
+		TweenLite.to(columnWordText, .6, {y: 100, opacity: 0, ease: Quint.easeOut, delay: .1, onComplete: function() {
+			columnWordText.textContent = rhymePoint.getWords()[1];
+			TweenLite.to(columnWordText, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
+		}});
+
+		TweenLite.to(rhymeScoreText, .6, {y: 100, opacity: 0, ease: Quint.easeOut, delay: .2, onComplete: function() {
+			rhymeScoreText.textContent = rhymePoint.getRhymeScore().toString();
+			TweenLite.to(rhymeScoreText, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
+		}});
+
+	};
 
 	
 	self.findRhymePointWithGivenIndex = function(index) {
@@ -139,27 +204,54 @@ function RhymePlot(brain, scene) {
 			width += SPACE_BETWEEN_RHYME_POINTS;
 		}
 		return width;
-	}
+	};
+
+	self.render = function() {
+		if (rhymePoints == null) {
+			return;
+		}
+
+		/*
+		var positions = particlesBufferGeometry.attributes.position.array;
+		var time = Date.now() * 0.005;
+
+		var counter = 0;
+		for ( var i = 0; i < positions.length; i++ ) {
+			//only update the y value
+			if (counter == 1) {
+				positions[i] = 10 * ( 1 + Math.sin( 0.001 * i + time ) );
+				
+			}
+			counter += 1;
+			if (counter == 3) {
+				counter = 0;
+			}
+		}
+		particlesBufferGeometry.attributes.position.needsUpdate = true;
+		*/
+	};
 	
 	self.init();
 }
 
 
 
-function RhymePoint(parent, word, position, row, column, index) {
+function RhymePoint(parent, rowWord, columnWord, rhymeScore, position, row, column, index) {
 
 	var self = this;
 	var SHAPE_SIZE = 1;
 
 	self.init = function() {
 	
-	}
+	};
 
 
 	self.getRow = function() { return row; };
 	self.getColumn = function() { return column; };
 	self.getPosition = function() { return position; };
 	self.getIndex = function() { return index; };
+	self.getWords = function() { return [rowWord, columnWord]; };
+	self.getRhymeScore = function() { return rhymeScore; };
 
 
 	self.init();

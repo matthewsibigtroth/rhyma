@@ -2,33 +2,22 @@
 function RhymeManager(brain) {
 
 	var self = this;
-	var wordList = [];
-	var NUM_WORDS = 100;//10;
+	var NUM_WORDS = 100;
+	var rhymeMap;
 
 	self.init = function() {
-		self.createWordList();
-		self.createRhymeScores();
+		self.requestRhymeMap();
 	};
 
-	self.createWordList = function() {
-		for (var i=0; i<NUM_WORDS; i++) {
-			var randomWord = Math.floor((Math.random()*1000)).toString();
-			wordList.push(randomWord);
-		}
+	self.requestRhymeMap = function() {
+		brain.getSocketManager().requestRhymeMap(NUM_WORDS);
 	};
 
-	self.createRhymeScores = function() {
-		// send the word list to the server
-		// server will create and return a data structure
-		// that gives a rhyme score for each word pair from the list
-	};
-
-
-	self.getWordList = function() {
-		return wordList;
+	self.onRhymeMapReceived = function(newRhymeMap) {
+		rhymeMap = newRhymeMap;
+		brain.getWorldManager().getRhymePlot().initRhymeMap(rhymeMap);
 	};
 
 	self.init();
-
 };
 
