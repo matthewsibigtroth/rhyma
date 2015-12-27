@@ -10,15 +10,17 @@ function Brain() {
 	self.init = function() {
 		self.createWordManager();
 		self.createServerManager();
-	}
+	};
+
+	self.getWordManager = function() { return wordManager; };
 
 	self.createWordManager = function() {
 		wordManager = new WordManager(self);
-	}
+	};
 
 	self.createServerManager = function() {
 		serverManager = new ServerManager(self);
-	}
+	};
 
 	self.init();
 }
@@ -29,15 +31,14 @@ function WordManager() {
 	var cmuDict;
 	var words;
 	var levenshtein;
-	var rhymeMap;
 
 	self.init = function() {
 		console.log("creating word manager");
 		self.createCmuDict();
 		self.createWords();
 		self.createLevenshtein();
-		self.createRhymeMap();
-		//self.calculateRhymeScore("excitation", "concentration");
+
+		self.calculateRhymeScore('feld', 'ornette');
 	}
 
 	self.createCmuDict = function() {
@@ -55,9 +56,9 @@ function WordManager() {
 		levenshtein = require("levenshtein");
 	}
 
-	self.createRhymeMap = function() {
-		rhymeMap = {};
-		var numWords = 100;
+	self.createRhymeMap = function(numWords) {
+		console.log('createRhymeMap for', numWords, 'words');
+		var rhymeMap = {};
 		var wordsSubset = self.createOrderedWordsSubset(numWords);
 		for (var i=0; i<wordsSubset.length; i++) {
 			var wordA = wordsSubset[i];
@@ -70,39 +71,49 @@ function WordManager() {
 			}
 			rhymeMap[wordA] = rhymeScores;
 		}
-	}
+
+		return rhymeMap;
+	};
 
 	self.createOrderedWordsSubset = function(numWords) {
 		var wordsSubset = [];
 		var wordIndices = Object.keys(words);
-		for (var i=0; i<numWords; i++) {
+		var regularExpression = new RegExp("^[a-zA-Z]+$"); // Alphabet strings only
+		while (wordsSubset.length < numWords) {
 			var randIndex = Math.floor(Math.random()*wordIndices.length);
 			var wordString = words[randIndex].toLowerCase();
-			wordsSubset.push(wordString);
+			if (regularExpression.test(wordString) == true) {
+				wordsSubset.push(wordString);	
+			}
 		}
 		wordsSubset.sort();
-
 		return wordsSubset;
 	}
 
 	self.calculateRhymeScore = function(wordA, wordB) {
 		var wordAPhonemeString = "";
 		var wordAPhonemesToUse = self.findWordPhonemesAfterPrimaryStress(wordA);
+		console.log('wordA phonemes to use', wordAPhonemesToUse);
 		if (wordAPhonemesToUse.length == 0) {
 			wordAPhonemesToUse = cmuDict.get(wordA).split(" ");
 		}
 		wordAPhonemesString = self.createPhonemeString(wordAPhonemesToUse);
-
+		//console.log('wordA phoneme string', wordAPhonemesString);
 		
 		var wordBPhonemeString = "";
 		var wordBPhonemesToUse = self.findWordPhonemesAfterPrimaryStress(wordB);
+		console.log('wordB phonemes to use', wordBPhonemesToUse);
 		if (wordBPhonemesToUse.length == 0) {
 			wordBPhonemesToUse = cmuDict.get(wordB).split(" ");
 		}
 		wordBPhonemesString = self.createPhonemeString(wordBPhonemesToUse);
+		//console.log('wordB phoneme string', wordBPhonemesString);
+		
 
 		var levenshteinResult = new levenshtein(wordAPhonemesString, wordBPhonemesString);
 		var rhymeScore = levenshteinResult.distance;
+
+		console.log(rhymeScore);
 
 		return rhymeScore;
 	}
@@ -145,27 +156,21 @@ function ServerManager() {
 	var self = this;
 	var app;
 	var express;
-	var favicon;
+	var server;
 	var PUBLIC_FOLDER_PATH = "/public";
 	var HTML_CLIENT_FOLDER_PATH = PUBLIC_FOLDER_PATH + "/client";
 	var HTML_CLIENT_INDEX_PATH = HTML_CLIENT_FOLDER_PATH + "/index.html";
 	var FAVICON_PATH = HTML_CLIENT_FOLDER_PATH + "/images/favicon.png";
 	var HTML_CLIENT_SOCKET_PORT = 9000;
-	var htmlClientSockets = [];
 
 	self.init = function() {
 		console.log("creating server manager");
-		self.createExpress();
-		self.createApp();
-		self.createFavicon();
-		self.createHtmlClientSocket();
+		self.createServer();
+		self.listenForSockets();
 	}
 
-	self.createExpress = function() {
+	self.createServer = function() {
 		express = require('express');
-	}
-
-	self.createApp = function() {
 		app = express();
 		// Serve up static files from the public folder
 		app.use(express.static(__dirname + PUBLIC_FOLDER_PATH));
@@ -173,78 +178,40 @@ function ServerManager() {
 		app.get('/', function(req, res){
 		  res.sendFile(HTML_CLIENT_INDEX_PATH, {"root": __dirname});
 		});
-	}
-
-	self.createFavicon = function() {
-		var favicon = require('serve-favicon');
-		app.use(favicon(__dirname + FAVICON_PATH));
-	}
-
-	self.createHtmlClientSocket = function() {
-		var server = self.createHttpServer();
-		var io = require('socket.io')(server);
-
-		// Listen for the connection event
-		io.on('connection', function(socket) {
-			console.log("html client socket " + socket.id + " connection opened");
-
-			htmlClientSockets.push(socket);
-
-			socket.on('disconnect', function() {
-				console.log("html client socket " + socket.id + " disconnected");
-				var socketIndex = htmlClientSockets.indexOf(socket);
-				if (socketIndex > -1) {
-	    			htmlClientSockets.splice(socketIndex, 1);
-				}
-	   		});
-
-		});
-
+		var http = require("http");
+		server = http.createServer(app);
 		server.listen(HTML_CLIENT_SOCKET_PORT, function() {
 		  console.log('listening on *:' + HTML_CLIENT_SOCKET_PORT.toString());
 		});
 	}
 
-	self.createHttpServer = function() {
-		var http = require("http");
-		var server = http.createServer(app);
-		return server;
-	}
+	self.listenForSockets = function() {
+		var io = require('socket.io')(server);
+		// Listen for the connection event
+		io.on('connection', function(socket) {
+			console.log("html client socket " + socket.id + " connection opened");
 
+			socket.on('disconnect', function() {
+				console.log("html client socket " + socket.id + " disconnected");
+	   		});
+
+	   		socket.on('sendRhymeMap', function(message) {
+	   			self.handleSendRhymeMapMessage(message, socket);
+	   		});
+		});
+	}
 
 
 	/////////////////////////////////////
 	// utilities
 	/////////////////////////////////////
 
-	self.handleSetColorMessage = function(message) {
-		sendMessageToEdison("setColor", message);
-	}
-
-	self.handleSetMoodMessage = function(message) {
-		sendMessageToEdison("setMood", message);
-	}
-
-	self.sendMessageToEdison = function(messageType, message) {
-		var json = JSON.stringify(message);
-		console.log("sending message to edison: " + json);
-		if (edisonClientSocket == undefined) {
-			return;
-		}
-		edisonClientSocket.emit(messageType, message);
-	}
-
-	self.handleNetworkInfoMessage = function(message) {
-		console.log("handleNetworkInfoMessage");
-		console.log(message);
-		sendMessageToHtmlClients("networkInfo", message);
-	}
-
-	self.sendMessageToHtmlClients = function(messageType, message) {
-		for (var i=0; i<htmlClientSockets.length; i++) {
-			htmlClientSockets[i].emit(messageType, message);
-		}
-	}
+	self.handleSendRhymeMapMessage = function(message, socket) {
+		var numWords = message['numWords'];
+		var rhymeMap = brain.getWordManager().createRhymeMap(numWords);
+		var message = {'rhymeMap': rhymeMap};
+		socket.emit('rhymeMap', message);
+	};
 
 
 	self.init();

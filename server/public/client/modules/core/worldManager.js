@@ -4,7 +4,7 @@ function WorldManager(brain) {
 	var scene;
 	var camera;
 	var renderer;
-	var stats;
+	var stats = null;
 	var mainContainer;
 	var worldContainer;
 	var directionalLight;
@@ -16,7 +16,7 @@ function WorldManager(brain) {
 		self.createRenderer();
 		self.createDirectionalLight();
 		self.createCamera();
-		self.createStats();
+		//self.createStats();
 		self.createRhymePlot();
 		self.createOrbitControls();
 		self.listenForWindowResize();
@@ -100,10 +100,13 @@ function WorldManager(brain) {
 	self.animate = function() {
 		requestAnimationFrame(self.animate);
 		self.render();
-		stats.update();
+		if (stats != null) {
+			stats.update();
+		}
 	}
 
 	self.render = function() {
+		rhymePlot.render();
 		renderer.render(scene, camera);
 	}
 
