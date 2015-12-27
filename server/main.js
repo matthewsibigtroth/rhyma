@@ -37,8 +37,6 @@ function WordManager() {
 		self.createCmuDict();
 		self.createWords();
 		self.createLevenshtein();
-
-		self.calculateRhymeScore('feld', 'ornette');
 	}
 
 	self.createCmuDict = function() {
@@ -62,14 +60,13 @@ function WordManager() {
 		var wordsSubset = self.createOrderedWordsSubset(numWords);
 		for (var i=0; i<wordsSubset.length; i++) {
 			var wordA = wordsSubset[i];
-			var rhymeScores = [];
+			var wordARhymeData = [];
 			for (var j=0; j<wordsSubset.length; j++) {
 				var wordB = wordsSubset[j];
-				var rhymeScore = self.calculateRhymeScore(wordA, wordB);
-				console.log(wordA, wordB, rhymeScore);
-				rhymeScores.push(rhymeScore);
+				var rhymeDatum = self.generateRhymeDatum(wordA, wordB);
+				wordARhymeData.push(rhymeDatum);
 			}
-			rhymeMap[wordA] = rhymeScores;
+			rhymeMap[wordA] = wordARhymeData;
 		}
 
 		return rhymeMap;
@@ -90,10 +87,13 @@ function WordManager() {
 		return wordsSubset;
 	}
 
-	self.calculateRhymeScore = function(wordA, wordB) {
+	// Calculates the rhyme score between two words
+	// and return it packaged in an object containing 
+	// the phonetic data as well
+	self.generateRhymeDatum = function(wordA, wordB) {
 		var wordAPhonemeString = "";
 		var wordAPhonemesToUse = self.findWordPhonemesAfterPrimaryStress(wordA);
-		console.log('wordA phonemes to use', wordAPhonemesToUse);
+		//console.log('wordA phonemes to use', wordAPhonemesToUse);
 		if (wordAPhonemesToUse.length == 0) {
 			wordAPhonemesToUse = cmuDict.get(wordA).split(" ");
 		}
@@ -102,20 +102,23 @@ function WordManager() {
 		
 		var wordBPhonemeString = "";
 		var wordBPhonemesToUse = self.findWordPhonemesAfterPrimaryStress(wordB);
-		console.log('wordB phonemes to use', wordBPhonemesToUse);
+		//console.log('wordB phonemes to use', wordBPhonemesToUse);
 		if (wordBPhonemesToUse.length == 0) {
 			wordBPhonemesToUse = cmuDict.get(wordB).split(" ");
 		}
 		wordBPhonemesString = self.createPhonemeString(wordBPhonemesToUse);
 		//console.log('wordB phoneme string', wordBPhonemesString);
 		
-
 		var levenshteinResult = new levenshtein(wordAPhonemesString, wordBPhonemesString);
 		var rhymeScore = levenshteinResult.distance;
+		var rhymeDatum = {
+			'otherWord': wordB,
+			'rhymeScore': rhymeScore,
+			'wordPhonemesToUse': wordAPhonemesToUse,
+			'otherWordPhonemesToUse': wordBPhonemesToUse
+		};
 
-		console.log(rhymeScore);
-
-		return rhymeScore;
+		return rhymeDatum;
 	}
 
 	self.findWordPhonemesAfterPrimaryStress = function(word) {

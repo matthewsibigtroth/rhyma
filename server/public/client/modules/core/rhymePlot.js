@@ -39,8 +39,7 @@ function RhymePlot(brain, scene) {
 			for (var column=0; column<words.length; column++) {
 				var rowWord = words[row];
 				var columnWord = words[column];
-				var rhymeScore = rhymeMap[rowWord][column];
-				
+				var rhymeScore = rhymeMap[rowWord][column]['rhymeScore'];
 				var x = (column * SPACE_BETWEEN_RHYME_POINTS) - offsetX;
 				var y = -rhymeScore * scoreScaleFactor;
 				var z = -(row * SPACE_BETWEEN_RHYME_POINTS);
