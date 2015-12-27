@@ -6,7 +6,14 @@
     <meta name="description" content=""/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    
+    <!--<link rel="icon" type="image/png" href="/client/images/favicon.png" />-->
+
+    <script src="client/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="client/bower_components/paper-button/paper-button.html">
+    <link rel="stylesheet" href="client/bower_components/paper-styles/demo.css">
     <link rel="stylesheet" type="text/css" href="client/styles.css">
+
   </head>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -40,11 +47,11 @@
       <div id="rhymeInfoPanel">
         <div id="rowWordInfo">
           <div id="rowWordText"></div>
-          <div id="rowWordPhonemes">kr ah m p us</div>
+          <div id="rowWordPhonemes"></div>
         </div>
         <div id="columnWordInfo">
           <div id="columnWordText"></div>
-          <div id="columnWordPhonemes">d eh th</div>
+          <div id="columnWordPhonemes"></div>
         </div>
         <div id="rhymeScore">
           <div id="rhymeScoreText">
