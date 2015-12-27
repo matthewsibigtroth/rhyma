@@ -145,7 +145,6 @@ function WordManager() {
 	}
 
 	self.cleanUpPhoneme = function(phoneme) {
-		console.log('cleanUpPhoneme before', phoneme);
 		var charsToRemove = ['0', '1', '2', '3', '4', '5'];
 		for (var i=0; i<charsToRemove.length; i++) {
 			var character = charsToRemove[i];
@@ -153,7 +152,6 @@ function WordManager() {
 				phoneme = phoneme.replace(character, '');	
 			}
 		}
-		console.log('cleanUpPhoneme after', phoneme);
 		return phoneme;	
 	};
 

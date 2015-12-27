@@ -1,0 +1,22 @@
+{
+  "name": "rhyma",
+  "homepage": "https://github.com/matthewsibigtroth/rhyma",
+  "authors": [
+    "matthew sibigtroth <matthew.sibigtroth@gmail.com>"
+  ],
+  "description": "rhyma",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.0",
+    "paper-button": "PolymerElements/paper-button#~1.0.11"
+  }
+}
