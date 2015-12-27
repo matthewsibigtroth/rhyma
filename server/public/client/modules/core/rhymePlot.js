@@ -9,14 +9,17 @@ function RhymePlot(brain, scene) {
 	var particleSystem;
 	var particlesBufferGeometry;
 	var rowWordText;
+	var rowWordPhonemes;
 	var columnWordText;
+	var columnWordPhonemes;
 	var rhymeScoreText;
 
-
 	self.init = function() {
-		rowWordText = document.querySelector("#rowWordText");
-		columnWordText = document.querySelector("#columnWordText");
-		rhymeScoreText = document.querySelector("#rhymeScoreText");
+		rowWordText = document.querySelector('#rowWordText');
+		rowWordPhonemes = document.querySelector('#rowWordPhonemes');
+		columnWordText = document.querySelector('#columnWordText');
+		columnWordPhonemes = document.querySelector('#columnWordPhonemes');
+		rhymeScoreText = document.querySelector('#rhymeScoreText');
 	};
 
 	self.initRhymeMap = function(rhymeMap) {
@@ -39,6 +42,8 @@ function RhymePlot(brain, scene) {
 			for (var column=0; column<words.length; column++) {
 				var rowWord = words[row];
 				var columnWord = words[column];
+				var rowPhonemes = rhymeMap[rowWord][column]['wordPhonemesUsed'];
+				var columnPhonemes = rhymeMap[rowWord][column]['otherWordPhonemesUsed'];
 				var rhymeScore = rhymeMap[rowWord][column]['rhymeScore'];
 				var x = (column * SPACE_BETWEEN_RHYME_POINTS) - offsetX;
 				var y = -rhymeScore * scoreScaleFactor;
@@ -49,6 +54,8 @@ function RhymePlot(brain, scene) {
 					self,
 					rowWord,
 					columnWord,
+					rowPhonemes,
+					columnPhonemes,
 					rhymeScore,
 					position,
 					row, 
@@ -165,23 +172,26 @@ function RhymePlot(brain, scene) {
 	};
 
 	self.updateRhymeInfoPanel = function(rhymePoint) {
-		TweenLite.to(rowWordText, .6, {y: 100, opacity: 0, ease: Quint.easeOut, onComplete: function() {
+		TweenLite.to(rowWordInfo, .6, {opacity: 0, ease: Quint.easeOut, onComplete: function() {
 			rowWordText.textContent = rhymePoint.getWords()[0];
-			TweenLite.to(rowWordText, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
+			rowWordPhonemes.textContent = rhymePoint.getRowPhonemesString().toString();
+			TweenLite.set(rowWordInfo, {y: 100});
+			TweenLite.to(rowWordInfo, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
 		}});
 
-		TweenLite.to(columnWordText, .6, {y: 100, opacity: 0, ease: Quint.easeOut, delay: .1, onComplete: function() {
+		TweenLite.to(columnWordInfo, .6, {opacity: 0, ease: Quint.easeOut, delay: .1, onComplete: function() {
 			columnWordText.textContent = rhymePoint.getWords()[1];
-			TweenLite.to(columnWordText, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
+			columnWordPhonemes.textContent = rhymePoint.getColumnPhonemesString().toString();
+			TweenLite.set(columnWordInfo, {y: 100});
+			TweenLite.to(columnWordInfo, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
 		}});
 
-		TweenLite.to(rhymeScoreText, .6, {y: 100, opacity: 0, ease: Quint.easeOut, delay: .2, onComplete: function() {
+		TweenLite.to(rhymeScoreText, .6, {opacity: 0, ease: Quint.easeOut, delay: .2, onComplete: function() {
 			rhymeScoreText.textContent = rhymePoint.getRhymeScore().toString();
+			TweenLite.set(rhymeScoreText, {y: 100});
 			TweenLite.to(rhymeScoreText, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
 		}});
-
 	};
-
 	
 	self.findRhymePointWithGivenIndex = function(index) {
 		for (var row=0; row<rhymePoints.length; row++) {
@@ -195,7 +205,6 @@ function RhymePlot(brain, scene) {
 		}	
 		return null;
 	};
-	
 
 	self.calculatePlotWidth = function() {
 		var width = 0;
@@ -235,13 +244,12 @@ function RhymePlot(brain, scene) {
 
 
 
-function RhymePoint(parent, rowWord, columnWord, rhymeScore, position, row, column, index) {
+function RhymePoint(parent, rowWord, columnWord, rowPhonemes, columnPhonemes, rhymeScore, position, row, column, index) {
 
 	var self = this;
 	var SHAPE_SIZE = 1;
 
 	self.init = function() {
-	
 	};
 
 
@@ -251,6 +259,24 @@ function RhymePoint(parent, rowWord, columnWord, rhymeScore, position, row, colu
 	self.getIndex = function() { return index; };
 	self.getWords = function() { return [rowWord, columnWord]; };
 	self.getRhymeScore = function() { return rhymeScore; };
+	self.getRowPhonemes = function() { return rowPhonemes; };
+	self.getColumnPhonemes = function() { return columnPhonemes; };
+	self.getRowPhonemesString = function() {
+		var phonemesString = '';
+		for (var i=0; i<rowPhonemes.length; i++) {
+			phonemesString += rowPhonemes[i];
+			phonemesString += '  ';
+		}
+		return phonemesString;
+	};
+	self.getColumnPhonemesString = function() {
+		var phonemesString = '';
+		for (var i=0; i<columnPhonemes.length; i++) {
+			phonemesString += columnPhonemes[i];
+			phonemesString += '  ';
+		}
+		return phonemesString;
+	};
 
 
 	self.init();

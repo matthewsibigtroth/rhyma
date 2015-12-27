@@ -114,8 +114,8 @@ function WordManager() {
 		var rhymeDatum = {
 			'otherWord': wordB,
 			'rhymeScore': rhymeScore,
-			'wordPhonemesToUse': wordAPhonemesToUse,
-			'otherWordPhonemesToUse': wordBPhonemesToUse
+			'wordPhonemesUsed': wordAPhonemesToUse,
+			'otherWordPhonemesUsed': wordBPhonemesToUse
 		};
 
 		return rhymeDatum;
@@ -135,13 +135,27 @@ function WordManager() {
 			return phonemesAfterPrimaryStress;
 		}
 		else {
-			for (var j=indexOfPrimaryStress; j<wordPhonemes.length; j++) {
-				phonemesAfterPrimaryStress.push(wordPhonemes[j]);
+			for (var j=indexOfPrimaryStress+1; j<wordPhonemes.length; j++) {
+				var phoneme = wordPhonemes[j];
+				phoneme = self.cleanUpPhoneme(phoneme);
+				phonemesAfterPrimaryStress.push(phoneme);
 			}
 		}
-
 		return phonemesAfterPrimaryStress;
 	}
+
+	self.cleanUpPhoneme = function(phoneme) {
+		console.log('cleanUpPhoneme before', phoneme);
+		var charsToRemove = ['0', '1', '2', '3', '4', '5'];
+		for (var i=0; i<charsToRemove.length; i++) {
+			var character = charsToRemove[i];
+			if (phoneme.indexOf(character) != -1) {
+				phoneme = phoneme.replace(character, '');	
+			}
+		}
+		console.log('cleanUpPhoneme after', phoneme);
+		return phoneme;	
+	};
 
 	self.createPhonemeString = function(phonemes) {
 		var phonemeString = "";
