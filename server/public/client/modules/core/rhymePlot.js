@@ -16,6 +16,7 @@ function RhymePlot(brain, scene) {
 	var numWordsSlider;
 	var hideRhymeInfoPanelTimeoutId;
 	var RHYME_INFO_PANEL_SHOW_DURATION = 5000;
+	var rhymeMap;
 
 	self.init = function() {
 		rowWordText = document.querySelector('#rowWordText');
@@ -25,17 +26,23 @@ function RhymePlot(brain, scene) {
 		rhymeScoreText = document.querySelector('#rhymeScoreText');
 		numWordsSlider = document.querySelector('#numWordsSlider');
 		rhymeInfoPanel = document.querySelector('#rhymeInfoPanel');
+		self.requestRhymeMap();
 	};
 
-	self.initRhymeMap = function(rhymeMap) {
-		self.createRhymePoints(rhymeMap);
+	self.requestRhymeMap = function(numWordsToRequest) {
+		var numWordsToRequest = numWordsSlider.value;
+		brain.getSocketManager().requestRhymeMap(numWordsToRequest);
+	};
+
+	self.initRhymeMap = function() {
+		self.createRhymePoints();
 		self.createRaycaster();
 		self.listenForRhymePointTouches();
 		self.initRhymeInfoPanel();
 		self.initPlotControls();
 	};
 
-	self.createRhymePoints = function(rhymeMap) {
+	self.createRhymePoints = function() {
 		// Build the particles array and rhymePoint objects
 		rhymePoints = [];
 		var particles = new THREE.Geometry();
@@ -159,6 +166,10 @@ function RhymePlot(brain, scene) {
 
 
 
+	self.onRhymeMapReceived = function(newRhymeMap) {
+		rhymeMap = newRhymeMap;
+		self.initRhymeMap();
+	};
 
 	self.onDocumentTouchStart = function(event) {	
 		event.preventDefault();
@@ -200,9 +211,9 @@ function RhymePlot(brain, scene) {
 
 	self.onRefreshPlotButtonClick = function(event) {
 		self.clearPlot();
-		var numWordsToRequest = numWordsSlider.value;
-		brain.getRhymeManager().requestRhymeMap(numWordsToRequest);
+		self.requestRhymeMap();
 	};
+
 
 
 
