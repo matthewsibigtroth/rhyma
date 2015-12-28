@@ -9,8 +9,12 @@ function RhymeManager(brain) {
 		self.requestRhymeMap();
 	};
 
-	self.requestRhymeMap = function() {
-		brain.getSocketManager().requestRhymeMap(NUM_WORDS);
+	self.requestRhymeMap = function(numWordsToRequest) {
+		if (numWordsToRequest != undefined) {
+			brain.getSocketManager().requestRhymeMap(numWordsToRequest);
+		} else {
+			brain.getSocketManager().requestRhymeMap(NUM_WORDS);
+		}
 	};
 
 	self.onRhymeMapReceived = function(newRhymeMap) {

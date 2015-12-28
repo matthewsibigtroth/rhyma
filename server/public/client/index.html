@@ -9,39 +9,50 @@
     
     <!--<link rel="icon" type="image/png" href="/client/images/favicon.png" />-->
 
-    <script src="client/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+    
+    <link rel="import" href="client/bower_components/paper-slider/paper-slider.html">
     <link rel="import" href="client/bower_components/paper-button/paper-button.html">
     <link rel="stylesheet" href="client/bower_components/paper-styles/demo.css">
     <link rel="stylesheet" type="text/css" href="client/styles.css">
 
   </head>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/plugins/CSSPlugin.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/easing/EasePack.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenLite.min.js"></script>
-  <script src="client/modules/utils/three.min.js"></script>
-  <script src="client/modules/utils/stats.min.js"></script>
-  <script src="client/modules/utils/OrbitControls.js"></script>
-  <script src="client/modules/core/worldManager.js"></script>
-  <script src="client/modules/core/socketManager.js"></script>
-  <script src="client/modules/core/rhymeManager.js"></script>
-  <script src="client/modules/core/rhymePlot.js"></script>
-  <script src="client/modules/core/brain.js"></script>
-  <script src="client/main.js"></script>
 
-  <script>
-    init();
-  </script>
+  <style is="custom-style">
+    paper-button.custom {
+      --paper-button-ink-color: var(--paper-indigo-500);
+      /* These could also be individually defined for each of the
+        specific css classes, but we'll just do it once as an example */
+      --paper-button-flat-keyboard-focus: {
+        background-color: var(--paper-indigo-500);
+        color: white !important;
+      };
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-indigo-500) !important;
+        color: white !important;
+      };
+    }
+    paper-button.pink {
+      color: var(--paper-indigo-500);
+    }
+  </style>
+
 
 
   <body>
 
-
     <div id="mainContainer">
 
       <div id="worldContainer">
+      </div>
 
+      <div id="plotControls">
+        <div id="numWordsControl">
+          <paper-slider id="numWordsSlider" min="10" max="1000" value="100"></paper-slider>
+        </div>
+        <div id="refreshPlotControl">
+          <paper-button id="refreshPlotButton" class="custom pink">REFRESH</paper-button>
+        </div>
       </div>
 
       <div id="rhymeInfoPanel">
@@ -61,5 +72,24 @@
     </div>
 
   </body>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/plugins/CSSPlugin.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/easing/EasePack.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenLite.min.js"></script>
+  <script src="client/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="client/modules/utils/three.min.js"></script>
+  <script src="client/modules/utils/stats.min.js"></script>
+  <script src="client/modules/utils/OrbitControls.js"></script>
+  <script src="client/modules/core/worldManager.js"></script>
+  <script src="client/modules/core/socketManager.js"></script>
+  <script src="client/modules/core/rhymeManager.js"></script>
+  <script src="client/modules/core/rhymePlot.js"></script>
+  <script src="client/modules/core/brain.js"></script>
+  <script src="client/main.js"></script>
+
+  <script>
+    init();
+  </script>
 </html>
 

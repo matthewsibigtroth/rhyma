@@ -13,6 +13,9 @@ function RhymePlot(brain, scene) {
 	var columnWordText;
 	var columnWordPhonemes;
 	var rhymeScoreText;
+	var numWordsSlider;
+	var hideRhymeInfoPanelTimeoutId;
+	var RHYME_INFO_PANEL_SHOW_DURATION = 5000;
 
 	self.init = function() {
 		rowWordText = document.querySelector('#rowWordText');
@@ -20,12 +23,16 @@ function RhymePlot(brain, scene) {
 		columnWordText = document.querySelector('#columnWordText');
 		columnWordPhonemes = document.querySelector('#columnWordPhonemes');
 		rhymeScoreText = document.querySelector('#rhymeScoreText');
+		numWordsSlider = document.querySelector('#numWordsSlider');
+		rhymeInfoPanel = document.querySelector('#rhymeInfoPanel');
 	};
 
 	self.initRhymeMap = function(rhymeMap) {
 		self.createRhymePoints(rhymeMap);
 		self.createRaycaster();
-		self.listenForRhymePointTouches();	
+		self.listenForRhymePointTouches();
+		self.initRhymeInfoPanel();
+		self.initPlotControls();
 	};
 
 	self.createRhymePoints = function(rhymeMap) {
@@ -131,6 +138,24 @@ function RhymePlot(brain, scene) {
 		//document.addEventListener( 'touchstart', self.onDocumentTouchStart, false );
 	};
 
+	self.initRhymeInfoPanel = function() {
+		TweenLite.set(rhymeInfoPanel, {y: rhymeInfoPanel.offsetHeight});
+	};
+
+	self.initPlotControls = function() {
+		var plotControls = document.querySelector('#plotControls');
+		plotControls.addEventListener('mousedown', self.onPlotControlsTouchStart);
+		plotControls.addEventListener('touchstart', self.onPlotControlsTouchStart);
+		plotControls.addEventListener('mouseup', self.onPlotControlsTouchEnd);
+		plotControls.addEventListener('touchend', self.onPlotControlsTouchEnd);
+		var refreshPlotButton = document.querySelector('#refreshPlotButton');
+		refreshPlotButton.addEventListener('click', self.onRefreshPlotButtonClick);
+		TweenLite.to(plotControls, .6, {
+			opacity: 1,
+			ease: Quint.easeOut
+		});
+	};
+
 
 
 
@@ -160,39 +185,82 @@ function RhymePlot(brain, scene) {
 
 			var rhymePoint = self.findRhymePointWithGivenIndex(intersects[0].index);
 			if (rhymePoint != null) {
-				console.log(
-					rhymePoint.getRow(),
-					rhymePoint.getColumn(),
-					rhymePoint.getWords(),
-					rhymePoint.getRhymeScore());
-
 				self.updateRhymeInfoPanel(rhymePoint);
 			}
 		}
 	};
 
+	self.onPlotControlsTouchStart = function(event) {
+		brain.getWorldManager().disableOrbitControls();
+	};
+
+	self.onPlotControlsTouchEnd = function(event) {
+		brain.getWorldManager().enableOrbitControls();
+	};
+
+	self.onRefreshPlotButtonClick = function(event) {
+		self.clearPlot();
+		var numWordsToRequest = numWordsSlider.value;
+		brain.getRhymeManager().requestRhymeMap(numWordsToRequest);
+	};
+
+
+
 	self.updateRhymeInfoPanel = function(rhymePoint) {
-		TweenLite.to(rowWordInfo, .6, {opacity: 0, ease: Quint.easeOut, onComplete: function() {
-			rowWordText.textContent = rhymePoint.getWords()[0];
-			rowWordPhonemes.textContent = rhymePoint.getRowPhonemesString().toString();
-			TweenLite.set(rowWordInfo, {y: 100});
-			TweenLite.to(rowWordInfo, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
-		}});
+		clearTimeout(hideRhymeInfoPanelTimeoutId);
+		self.showRhymeInfoPanel();
+		hideRhymeInfoPanelTimeoutId = setTimeout(self.hideRhymeInfoPanel, RHYME_INFO_PANEL_SHOW_DURATION);
 
-		TweenLite.to(columnWordInfo, .6, {opacity: 0, ease: Quint.easeOut, delay: .1, onComplete: function() {
-			columnWordText.textContent = rhymePoint.getWords()[1];
-			columnWordPhonemes.textContent = rhymePoint.getColumnPhonemesString().toString();
-			TweenLite.set(columnWordInfo, {y: 100});
-			TweenLite.to(columnWordInfo, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
-		}});
+		TweenLite.to(rowWordInfo, .6, {
+			opacity: 0, 
+			ease: Quint.easeOut, 
+			onComplete: function() {
+				rowWordText.textContent = rhymePoint.getWords()[0];
+				rowWordPhonemes.textContent = rhymePoint.getRowPhonemesString().toString();
+				TweenLite.set(rowWordInfo, {y: 100});
+				TweenLite.to(rowWordInfo, .6, {y: 0, opacity: 1, ease: Quint.easeOut});
+			}
+		});
 
-		TweenLite.to(rhymeScoreText, .6, {opacity: 0, ease: Quint.easeOut, delay: .2, onComplete: function() {
-			rhymeScoreText.textContent = rhymePoint.getRhymeScore().toString();
-			TweenLite.set(rhymeScoreText, {y: 100});
-			TweenLite.to(rhymeScoreText, .6, {y: 0, opacity: 1, ease: Quint.easeOut});		
-		}});
+		TweenLite.to(columnWordInfo, .6, {
+			opacity: 0, 
+			ease: Quint.easeOut,
+			delay: .1,
+			onComplete: function() {
+				columnWordText.textContent = rhymePoint.getWords()[1];
+				columnWordPhonemes.textContent = rhymePoint.getColumnPhonemesString().toString();
+				TweenLite.set(columnWordInfo, {y: 100});
+				TweenLite.to(columnWordInfo, .6, {y: 0, opacity: 1, ease: Quint.easeOut});
+			}
+		});
+
+		TweenLite.to(rhymeScoreText, .6, {
+			opacity: 0, 
+			ease: Quint.easeOut, 
+			delay: .2, 
+			onComplete: function() {
+				rhymeScoreText.textContent = rhymePoint.getRhymeScore().toString();
+				TweenLite.set(rhymeScoreText, {y: 100});
+				TweenLite.to(rhymeScoreText, .6, {y: 0, opacity: 1, ease: Quint.easeOut});
+			}
+		});
 	};
 	
+	self.hideRhymeInfoPanel = function() {
+		TweenLite.to(rhymeInfoPanel, .6, {
+			y: rhymeInfoPanel.offsetHeight, 
+			ease: Quint.easeOut
+		});
+	};
+
+	self.showRhymeInfoPanel = function() {
+		TweenLite.to(rhymeInfoPanel, .6, {
+			y: 0,
+			opacity: 1,
+			ease: Quint.easeOut
+		});
+	};
+
 	self.findRhymePointWithGivenIndex = function(index) {
 		for (var row=0; row<rhymePoints.length; row++) {
 			var rhymePointsInThisRow = rhymePoints[row];
@@ -237,6 +305,13 @@ function RhymePlot(brain, scene) {
 		}
 		particlesBufferGeometry.attributes.position.needsUpdate = true;
 		*/
+	};
+
+	self.clearPlot = function() {
+		for (var i=scene.children.length - 1; i >= 0; i--) {
+			var sceneObject = scene.children[i];
+     		scene.remove(sceneObject);
+		}
 	};
 	
 	self.init();
