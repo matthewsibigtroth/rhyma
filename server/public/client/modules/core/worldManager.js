@@ -9,6 +9,7 @@ function WorldManager(brain) {
 	var worldContainer;
 	var directionalLight;
 	var rhymePlot;
+	var orbitControls;
 
 	self.init = function() {
 		self.initContainers();
@@ -57,7 +58,7 @@ function WorldManager(brain) {
 	}
 
 	self.createOrbitControls = function() {
-		var orbitControls = new THREE.OrbitControls( camera );
+		orbitControls = new THREE.OrbitControls( camera );
 		orbitControls.damping = 0.2;
 		orbitControls.addEventListener("change", self.render);
 	}
@@ -96,7 +97,7 @@ function WorldManager(brain) {
 	}
 
 
-		
+
 	self.animate = function() {
 		requestAnimationFrame(self.animate);
 		self.render();
@@ -110,6 +111,13 @@ function WorldManager(brain) {
 		renderer.render(scene, camera);
 	}
 
+	self.disableOrbitControls = function() {
+		orbitControls.enabled = false;
+	};
+
+	self.enableOrbitControls = function() {
+		orbitControls.enabled = true;
+	};
 
 
 	
