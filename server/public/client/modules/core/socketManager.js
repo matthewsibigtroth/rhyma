@@ -26,7 +26,7 @@ function SocketManager() {
 	};
 
 	self.handleRhymeMapMessage = function(message) {
-		brain.getRhymeManager().onRhymeMapReceived(message['rhymeMap']);
+		brain.getWorldManager().getRhymePlot().onRhymeMapReceived(message['rhymeMap']);
 	};
 
 	self.sendMessageToServer = function(messageType, message) {
